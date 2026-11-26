@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 const categories = ['All', 'Education', 'Environment', 'Community']
-const API_URL = 'http://localhost:5001'
+const API_URL = 'https://gooddeed-79tg.onrender.com'
 
 function App() {
   const [search, setSearch] = useState('')
@@ -823,7 +823,7 @@ const fetchMyApplications = async () => {
 
 // Separate administrator workspace. All data is loaded from protected admin APIs.
 function AdminDashboard({ user, onLogout }) {
-  const API_URL = 'http://localhost:5001'
+  const API_URL = 'https://gooddeed-79tg.onrender.com'
   const token = localStorage.getItem('gooddeedToken')
   const [tab, setTab] = useState('Overview')
   const [stats, setStats] = useState({
