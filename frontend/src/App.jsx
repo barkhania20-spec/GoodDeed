@@ -37,6 +37,11 @@ function App() {
   const [applicationsLoading, setApplicationsLoading] = useState(false)
   const [applicationsError, setApplicationsError] = useState('')
   const [applicationMessage, setApplicationMessage] = useState('')
+  const [applicationSkills, setApplicationSkills] = useState('')
+  const [applicationExperience, setApplicationExperience] = useState('')
+  const [applicationAvailability, setApplicationAvailability] = useState('Weekdays')
+  const [applicationPreferredTime, setApplicationPreferredTime] = useState('Anytime')
+  const [applicationMotivation, setApplicationMotivation] = useState('')
   const [applicationLoading, setApplicationLoading] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState('')
 
@@ -177,49 +182,59 @@ const fetchMyApplications = async () => {
   }
 
   // Submit volunteer application
-  const handleApplication = async (e) => {
-    e.preventDefault()
 
-    const token = localStorage.getItem('gooddeedToken')
+const handleApplication = async (e) => {
+  e.preventDefault()
 
-    if (!token) {
-      setSelectedOpportunity(null)
-      openAuth('login')
-      return
-    }
+  const token = localStorage.getItem('gooddeedToken')
 
-    setApplicationLoading(true)
-    setApplicationStatus('')
-
-    try {
-      const response = await fetch(`${API_URL}/api/applications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          opportunityId: selectedOpportunity._id,
-          message: applicationMessage,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Application failed.')
-      }
-
-      setApplicationStatus(
-        'success:' + data.message
-      )
-      setApplicationMessage('')
-    } catch (err) {
-      setApplicationStatus('error:' + err.message)
-    } finally {
-      setApplicationLoading(false)
-    }
+  if (!token) {
+    setSelectedOpportunity(null)
+    openAuth('login')
+    return
   }
+
+  setApplicationLoading(true)
+  setApplicationStatus('')
+
+  try {
+    const response = await fetch(`${API_URL}/api/applications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        opportunityId: selectedOpportunity._id,
+        skills: applicationSkills,
+        experience: applicationExperience,
+        availability: applicationAvailability,
+        preferredTime: applicationPreferredTime,
+        motivation: applicationMotivation,
+        message: applicationMessage,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Application failed.')
+    }
+
+    setApplicationStatus('success:' + data.message)
+
+    setApplicationSkills('')
+    setApplicationExperience('')
+    setApplicationAvailability('Weekdays')
+    setApplicationPreferredTime('Anytime')
+    setApplicationMotivation('')
+    setApplicationMessage('')
+  } catch (err) {
+    setApplicationStatus('error:' + err.message)
+  } finally {
+    setApplicationLoading(false)
+  }
+}
 
   // Filter opportunities
   const filteredOpportunities = opportunities.filter((item) => {
@@ -779,16 +794,84 @@ const fetchMyApplications = async () => {
                 onSubmit={handleApplication}
               >
                 <label>
-                  Your message (optional)
+                  Your Skills *
                   <textarea
                     className="application-textarea"
-                    placeholder="Tell the organization why you would like to volunteer..."
+                    placeholder="Example: Teaching, communication, event management..."
+                    value={applicationSkills}
+                    onChange={(e) => setApplicationSkills(e.target.value)}
+                    maxLength={300}
+                    rows={2}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Previous Experience *
+                  <textarea
+                    className="application-textarea"
+                    placeholder="Describe your previous experience, or write No previous experience."
+                    value={applicationExperience}
+                    onChange={(e) => setApplicationExperience(e.target.value)}
+                    maxLength={1000}
+                    rows={3}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Your Availability *
+                  <select
+                    value={applicationAvailability}
+                    onChange={(e) => setApplicationAvailability(e.target.value)}
+                    required
+                  >
+                    <option value="Weekdays">Weekdays</option>
+                    <option value="Weekends">Weekends</option>
+                    <option value="Both">Both weekdays and weekends</option>
+                    <option value="Flexible">Flexible</option>
+                  </select>
+                </label>
+
+                <label>
+                  Preferred Time *
+                  <select
+                    value={applicationPreferredTime}
+                    onChange={(e) => setApplicationPreferredTime(e.target.value)}
+                    required
+                  >
+                    <option value="Morning">Morning</option>
+                    <option value="Afternoon">Afternoon</option>
+                    <option value="Evening">Evening</option>
+                    <option value="Anytime">Anytime</option>
+                  </select>
+                </label>
+
+                <label>
+                  Why do you want to volunteer? *
+                  <textarea
+                    className="application-textarea"
+                    placeholder="Tell us why you want to join this opportunity..."
+                    value={applicationMotivation}
+                    onChange={(e) => setApplicationMotivation(e.target.value)}
+                    maxLength={1000}
+                    rows={4}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Additional Message (optional)
+                  <textarea
+                    className="application-textarea"
+                    placeholder="Anything else you would like to mention..."
                     value={applicationMessage}
                     onChange={(e) => setApplicationMessage(e.target.value)}
                     maxLength={500}
-                    rows={4}
+                    rows={2}
                   />
                 </label>
+
 
                 {applicationStatus.startsWith('error:') && (
                   <p className="application-error">
@@ -1124,25 +1207,87 @@ function AdminDashboard({ user, onLogout }) {
       {tab === 'Applications' && (
         <section style={cardStyle}>
           <h2 style={{ marginTop: 0 }}>Volunteer applications</h2>
+
           {applications.length === 0 && <p>No applications received yet.</p>}
-          <div style={{ display: 'grid', gap: '14px' }}>
+
+          <div style={{ display: 'grid', gap: '18px' }}>
             {applications.map((application) => (
               <article
                 key={application._id}
-                style={{ border: '1px solid #e6eee7', borderRadius: '12px', padding: '16px' }}
+                style={{
+                  border: '1px solid #e3ebe4',
+                  borderRadius: '14px',
+                  padding: '20px',
+                  background: '#fff',
+                }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  flexWrap: 'wrap',
+                }}>
                   <div>
-                    <h3 style={{ margin: '0 0 5px' }}>
-                      {application.opportunity?.title || 'Opportunity unavailable'}
+                    <h3 style={{ margin: '0 0 6px' }}>
+                      {application.user?.name || 'Volunteer'}
                     </h3>
-                    <div style={{ color: '#718078' }}>
-                      {application.user?.name || 'Volunteer'} · {application.user?.email || 'No email'}
+                    <div style={{ color: '#718078', fontSize: '14px' }}>
+                      {application.user?.email || 'No email'}
                     </div>
+                    <p style={{ margin: '10px 0', fontWeight: 600 }}>
+                      Opportunity: {application.opportunity?.title || 'Unavailable'}
+                    </p>
                   </div>
-                  <strong>{application.status}</strong>
+
+                  <strong style={{
+                    color: application.status === 'Approved'
+                      ? '#24784a'
+                      : application.status === 'Rejected'
+                        ? '#a9433c'
+                        : '#b7791f',
+                  }}>
+                    {application.status}
+                  </strong>
                 </div>
-                {application.message && <p>{application.message}</p>}
+
+                <div style={{
+                  background: '#f5f8f5',
+                  borderRadius: '10px',
+                  padding: '16px',
+                  margin: '12px 0',
+                }}>
+                  <h4 style={{ margin: '0 0 12px', color: '#24784a' }}>
+                    Applicant Details
+                  </h4>
+
+                  {[
+                    ['Skills', application.skills],
+                    ['Previous Experience', application.experience],
+                    ['Availability', application.availability],
+                    ['Preferred Time', application.preferredTime],
+                    ['Motivation', application.motivation],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ marginBottom: '12px' }}>
+                      <strong style={{ display: 'block', fontSize: '14px' }}>
+                        {label}
+                      </strong>
+                      <p style={{
+                        margin: '4px 0 0',
+                        color: '#52645a',
+                        lineHeight: 1.5,
+                      }}>
+                        {value || 'Not provided'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {application.message && (
+                  <p style={{ color: '#52645a' }}>
+                    <strong>Additional Message:</strong> {application.message}
+                  </p>
+                )}
+
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button
                     style={buttonStyle}
@@ -1151,6 +1296,7 @@ function AdminDashboard({ user, onLogout }) {
                   >
                     Approve
                   </button>
+
                   <button
                     style={{ ...buttonStyle, background: '#a9433c' }}
                     disabled={busyId === application._id || application.status === 'Rejected'}
@@ -1158,6 +1304,7 @@ function AdminDashboard({ user, onLogout }) {
                   >
                     Reject
                   </button>
+
                   <button
                     style={{ ...buttonStyle, background: '#e7eee8', color: '#385344' }}
                     disabled={busyId === application._id || application.status === 'Pending'}
@@ -1171,6 +1318,7 @@ function AdminDashboard({ user, onLogout }) {
           </div>
         </section>
       )}
+
 
       {tab === 'Volunteers' && (
         <section style={cardStyle}>

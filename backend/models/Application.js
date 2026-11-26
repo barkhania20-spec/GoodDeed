@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const applicationSchema = new mongoose.Schema(
@@ -11,6 +12,34 @@ const applicationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Opportunity",
       required: true,
+    },
+    skills: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 300,
+    },
+    experience: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 1000,
+    },
+    availability: {
+      type: String,
+      required: true,
+      enum: ["Weekdays", "Weekends", "Both", "Flexible"],
+    },
+    preferredTime: {
+      type: String,
+      required: true,
+      enum: ["Morning", "Afternoon", "Evening", "Anytime"],
+    },
+    motivation: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 1000,
     },
     message: {
       type: String,
@@ -26,7 +55,6 @@ const applicationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent duplicate applications
 applicationSchema.index(
   { user: 1, opportunity: 1 },
   { unique: true }

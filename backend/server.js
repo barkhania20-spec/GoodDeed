@@ -353,9 +353,19 @@ app.get("/api/opportunities/:id", async (req, res) => {
 // ---------------- VOLUNTEER APPLICATIONS ----------------
 
 // Submit application
+
+// Submit application
 app.post("/api/applications", protect, async (req, res) => {
   try {
-    const { opportunityId, message } = req.body;
+    const {
+      opportunityId,
+      skills,
+      experience,
+      availability,
+      preferredTime,
+      motivation,
+      message,
+    } = req.body;
 
     if (!opportunityId) {
       return res.status(400).json({
@@ -364,10 +374,48 @@ app.post("/api/applications", protect, async (req, res) => {
       });
     }
 
-    if (message && message.length > 500) {
+    if (
+      typeof skills !== "string" || !skills.trim() ||
+      typeof experience !== "string" || !experience.trim() ||
+      typeof motivation !== "string" || !motivation.trim() ||
+      !availability ||
+      !preferredTime
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Message cannot exceed 500 characters.",
+        message: "Please complete all required application fields.",
+      });
+    }
+
+    if (
+      skills.length > 300 ||
+      experience.length > 1000 ||
+      motivation.length > 1000
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "One or more fields exceed the character limit.",
+      });
+    }
+
+    if (!["Weekdays", "Weekends", "Both", "Flexible"].includes(availability)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select a valid availability option.",
+      });
+    }
+
+    if (!["Morning", "Afternoon", "Evening", "Anytime"].includes(preferredTime)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select a valid preferred time.",
+      });
+    }
+
+    if (message && (typeof message !== "string" || message.length > 500)) {
+      return res.status(400).json({
+        success: false,
+        message: "Additional message cannot exceed 500 characters.",
       });
     }
 
@@ -383,7 +431,12 @@ app.post("/api/applications", protect, async (req, res) => {
     const application = await Application.create({
       user: req.user._id,
       opportunity: opportunityId,
-      message: message || "",
+      skills: skills.trim(),
+      experience: experience.trim(),
+      availability,
+      preferredTime,
+      motivation: motivation.trim(),
+      message: message?.trim() || "",
     });
 
     res.status(201).json({
