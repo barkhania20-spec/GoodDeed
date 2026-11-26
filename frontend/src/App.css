@@ -1041,3 +1041,18 @@ button, input {
     font-size: 23px;
   }
 }
+.admin-link {
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  color: #26332c;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+}
+
+.admin-link:hover {
+  color: #238b52;
+}

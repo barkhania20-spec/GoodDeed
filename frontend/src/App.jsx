@@ -269,22 +269,16 @@ const fetchMyApplications = async () => {
           ) : (
             <>
               <button
-                className="login-link"
+                className="admin-link"
                 onClick={() => openAuth('admin')}
               >
                 Admin
               </button>
               <button
-                className="login-link"
+                className="nav-button"
                 onClick={() => openAuth('login')}
               >
                 Join us
-              </button>
-              <button
-                className="nav-button"
-                onClick={() => openAuth('signup')}
-              >
-                Get started ↗
               </button>
             </>
           )}
@@ -620,7 +614,7 @@ const fetchMyApplications = async () => {
                   : "Don't have an account?"}
               <button
                 onClick={() => {
-                  setAuthMode(authMode === 'signup' ? 'login' : 'login')
+                  setAuthMode(authMode === 'signup' ? 'login' : 'signup')
                   setAuthForm({ name: '', email: '', password: '' })
                   setAuthMessage('')
                 }}
