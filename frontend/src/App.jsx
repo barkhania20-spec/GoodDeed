@@ -237,19 +237,23 @@ const handleApplication = async (e) => {
 }
 
   // Filter opportunities
+  
   const filteredOpportunities = opportunities.filter((item) => {
     const matchesCategory =
       category === 'All' || item.category === category
 
-    const searchText = search.toLowerCase()
+    const searchText = search.trim().toLowerCase()
 
     const matchesSearch =
-      item.title.toLowerCase().includes(searchText) ||
-      item.organization.toLowerCase().includes(searchText) ||
-      item.location.toLowerCase().includes(searchText)
+      String(item.title || '').toLowerCase().includes(searchText) ||
+      String(item.organization || '').toLowerCase().includes(searchText) ||
+      String(item.location || '').toLowerCase().includes(searchText) ||
+      String(item.description || '').toLowerCase().includes(searchText) ||
+      String(item.category || '').toLowerCase().includes(searchText)
 
     return matchesCategory && matchesSearch
   })
+
 
   if (user?.role === 'admin') {
     return <AdminDashboard user={user} onLogout={handleLogout} />
